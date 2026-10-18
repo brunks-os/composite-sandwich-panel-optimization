@@ -1,0 +1,115 @@
+# Sortie de reference produite sous Octave 8.4 avec un substitut de fmincon base sur sqp (fmincon reel non execute). Le bloc 'Interior-point' ci-dessous utilise donc le meme solveur que SQP : ignorez la comparaison SQP/interior-point de ce fichier.
+=== 0. CAS DE REFERENCE : peaux lin, ame nomex ===
+  b = 200 mm, L = 600 mm, F = 600 N, delta_max = 6.0 mm (L/100), SF peau = 2.0
+  Peau : Ef = 12.0 GPa, rho_f = 1250 kg/m3, sig_adm = 80 MPa
+  Ame  : Gc = 25 MPa, Ez = 130 MPa, rho_c = 48 kg/m3, tau_adm = 0.60 MPa
+  (valeurs ILLUSTRATIVES : voir parametres.m)
+
+=== 1. OPTIMISATION fmincon, 16 departs (12 aleatoires + 4 coins) ===
+  k    depart [mm]      arrivee SQP [mm] m [kg]     flag  
+  1    ( 0.40,  3.00)   ( 0.400, 31.702)   0.30260    1     
+  2    ( 0.40, 50.00)   ( 0.400, 31.702)   0.30260    1     
+  3    ( 5.00,  3.00)   ( 0.400, 31.702)   0.30260    1     
+  4    ( 5.00, 50.00)   ( 0.400, 31.702)   0.30260    1     
+  5    ( 1.02, 42.83)   ( 0.400, 31.702)   0.30260    1     
+  6    ( 3.91, 14.99)   ( 0.400, 31.702)   0.30260    1     
+  7    ( 2.68, 24.13)   ( 0.400, 31.702)   0.30260    1     
+  8    ( 3.40, 40.07)   ( 0.400, 31.702)   0.30260    1     
+  9    ( 0.83,  4.33)   ( 0.400, 31.702)   0.30260    1     
+  10   ( 4.24, 23.34)   ( 0.400, 31.702)   0.30260    1     
+  11   ( 3.91,  3.10)   ( 0.400, 31.702)   0.30260    1     
+  12   ( 2.45, 36.91)   ( 0.400, 31.702)   0.30260    1     
+  13   ( 1.45, 47.43)   ( 0.400, 31.702)   0.30260    1     
+  14   ( 4.55,  4.44)   ( 0.400, 31.702)   0.30260    1     
+  15   ( 0.52, 28.45)   ( 0.400, 31.702)   0.30260    1     
+  16   ( 4.72, 20.92)   ( 0.400, 31.702)   0.30260    1     
+
+  --- SQP ---
+  Optimum fmincon (sqp) : tf = 0.4000 mm, c = 31.7022 mm, m = 0.30260 kg
+  Departs convergents : 16 / 16, dispersion de masse = 3.38e-08
+  Contraintes actives : fleche + borne tf_min
+  Grille exhaustive   : tf = 0.4000 mm, c = 31.7179 mm, m = 0.30269 kg
+  Ecart de masse fmincon vs grille : -0.030 %
+  Fleche : 6.000 mm (flexion 5.446 + cisaillement 0.554) / admissible 6.000 mm
+  Masse : peaux 0.1200 kg + ame 0.1826 kg
+  sigma_f exacte = 35.4 MPa, simplifiee = 35.0 MPa (admissible/SF = 40.0 MPa)
+  Plissement : sigma_wr = 145.8 MPa ; poinconnement : 0.534 MPa (limite 2.00 MPa)
+  Cisaillement ame : 0.047 MPa (limite 0.60 MPa)
+  Marges g_i (0 = sature) : fleche +0.000 ; rupture peau -0.115 ; plissement peau -0.514 ; flambement cellule -0.828 ; cisaillement ame -0.922 ; poinconnement ame -0.733 ; 
+  Validite : d/tf = 80.3 (>= 5,77 : 1) ; rapport ame = 7762.7 (>= 16 : 1)
+
+  --- Interior-point ---
+  Optimum fmincon (interior-point) : tf = 0.4000 mm, c = 31.7022 mm, m = 0.30260 kg
+  Departs convergents : 16 / 16, dispersion de masse = 3.38e-08
+  Contraintes actives : fleche + borne tf_min
+  Grille exhaustive   : tf = 0.4000 mm, c = 31.7179 mm, m = 0.30269 kg
+  Ecart de masse fmincon vs grille : -0.030 %
+  Fleche : 6.000 mm (flexion 5.446 + cisaillement 0.554) / admissible 6.000 mm
+  Masse : peaux 0.1200 kg + ame 0.1826 kg
+  sigma_f exacte = 35.4 MPa, simplifiee = 35.0 MPa (admissible/SF = 40.0 MPa)
+  Plissement : sigma_wr = 145.8 MPa ; poinconnement : 0.534 MPa (limite 2.00 MPa)
+  Cisaillement ame : 0.047 MPa (limite 0.60 MPa)
+  Marges g_i (0 = sature) : fleche +0.000 ; rupture peau -0.115 ; plissement peau -0.514 ; flambement cellule -0.828 ; cisaillement ame -0.922 ; poinconnement ame -0.733 ; 
+  Validite : d/tf = 80.3 (>= 5,77 : 1) ; rapport ame = 7762.7 (>= 16 : 1)
+
+  Ecart de masse SQP vs interior-point : 0.00e+00 (relatif)
+
+=== 2. SOLUTION FABRICABLE (plis entiers, ame au pas du catalogue) ===
+  1 plis x 0.40 mm = tf 0.40 mm ; c = 32 mm ; m = 0.3043 kg (surcout +0.6 %) ; faisable : 1
+warning: using the gnuplot graphics toolkit is discouraged
+
+The gnuplot graphics toolkit is not actively maintained and has a number
+of limitations that are unlikely to be fixed.  Communication with gnuplot
+uses a one-directional pipe and limited information is passed back to the
+Octave interpreter so most changes made interactively in the plot window
+will not be reflected in the graphics properties managed by Octave.  For
+example, if the plot window is closed with a mouse click, Octave will not
+be notified and will not update its internal list of open figure windows.
+The qt toolkit is recommended instead.
+
+=== 4. FRONT DE PARETO masse / fleche admissible ===
+  dmax [mm]  m [kg]    tf [mm]  c [mm]   grille    contraintes actives
+  1.00       0.6774    1.298    50.00    0.6775    fleche + borne c_max
+  1.50       0.5153    0.758    50.00    0.5158    fleche + borne c_max
+  2.00       0.4480    0.533    50.00    0.4486    fleche + borne c_max
+  3.00       0.3843    0.414    45.16    0.3845    fleche
+  4.00       0.3466    0.400    39.34    0.3470    fleche + borne tf_min
+  5.00       0.3212    0.400    34.93    0.3212    fleche + borne tf_min
+  6.00       0.3026    0.400    31.70    0.3027    fleche + borne tf_min
+  7.00       0.2883    0.400    29.22    0.2887    fleche + borne tf_min
+  8.00       0.2796    0.425    26.40    0.2802    fleche + rupture peau
+  9.00       0.2786    0.464    24.20    0.2786    rupture peau
+  10.00      0.2786    0.464    24.20    0.2786    rupture peau
+  12.00      0.2786    0.464    24.20    0.2786    rupture peau
+
+=== 5. SENSIBILITE de la masse optimale (cas de reference) ===
+  Masse de reference : 0.3026 kg
+  Elasticite de la masse optimale a F      : +0.320   (m/m_ref : 0.933 0.967 1.000 1.031 1.061 )
+  Elasticite de la masse optimale a Ef     : -0.290   (m/m_ref : 1.068 1.031 1.000 0.973 0.949 )
+  Elasticite de la masse optimale a rho_c  : +0.602   (m/m_ref : 0.879 0.940 1.000 1.060 1.121 )
+
+=== 6. COMPARAISON DE MATERIAUX ===
+  Combinaison      tf [mm]  c [mm]   m cont.   m fabr.   plis   tf/c fabr. contraintes actives
+  lin / nomex      0.400    31.70    0.3026    0.3043    1      0.40/32    fleche + borne tf_min (faisable : 1)
+  lin / balsa      0.685    22.56    0.6115    0.6540    2      0.80/23    fleche (faisable : 1)
+  carbone / nomex  0.250    19.38    0.2016    0.2052    1      0.25/20    fleche + borne tf_min (faisable : 1)
+
+=== 7. TESTS DE COHERENCE ===
+  T1 - Limite poutre homogene (Ec = Ef, Gc -> infini)
+     Gc [Pa]      delta [mm]     ecart relatif 
+     1e+08        0.337716       1.02e+00      
+     1e+10        0.169285       1.02e-02      
+     1e+12        0.167601       1.02e-04      
+     1e+15        0.167584       1.02e-07      
+     1e+18        0.167584       1.02e-10      
+     Ecart sur D : 1.1e-16 ; ecart sur delta (Gc = 1e18) : 1.0e-10  -> PASS
+  T2 - Optimum analytique (fleche seule, Ec = 0, Gc -> infini, peaux minces)
+     Analytique : tf = 0.1647 mm, c = 19.759 mm, m = 0.17783 kg (tf/c = 0.8 %)
+     fmincon    : tf = 0.1665 mm, c = 19.481 mm, m = 0.17684 kg
+     Ecarts relatifs : tf 1.13 %, c 1.40 %, m 0.56 % (attendu ~ tf/c, terme de peau mince neglige)
+     -> PASS
+  T3 - fmincon contre grille (cas de reference)
+     fmincon 0.30260 kg, grille 0.30269 kg, ecart 0.030 % -> PASS
+  => TOUS LES TESTS PASSENT
+
+Termine. Figures dans /home/claude/panneau_sandwich/figures
