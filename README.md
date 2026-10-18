@@ -1,102 +1,200 @@
-# Optimisation de masse d'un panneau sandwich en flexion 3 points
+# Composite Sandwich Panel Mass Optimization
 
-Minimiser la masse d'un panneau sandwich (2 peaux + âme) chargé en flexion 3 points, sous contraintes de flèche, de résistance et de stabilité locale. Application visée : paroi latérale de cockpit (peaux lin ou carbone, âme Nomex ou balsa).
+## Overview
 
-> **Toutes les données matériaux et le chargement de `parametres.m` sont arbitraires** (ordres de grandeur plausibles, aucune fiche fournisseur). Les chiffres ci-dessous valent pour ces données. Remplacez-les avant toute conclusion réelle.
+This project focuses on the numerical optimization of a composite sandwich panel subjected to a mechanical load. The objective is to minimize structural mass while satisfying stiffness, strength, and geometric constraints.
 
-## Lancer
+The panel consists of two composite skins separated by a lightweight core. The optimization process determines the skin thickness and core thickness that provide the best compromise between structural performance and weight.
+
+The model is implemented in MATLAB and uses constrained nonlinear optimization to identify the optimal design.
+
+## Objectives
+
+- Minimize the total mass of the sandwich panel.
+- Satisfy deflection and mechanical strength constraints.
+- Compare two optimization algorithms: SQP and Interior-Point.
+- Validate the numerical solution against an exhaustive grid search.
+- Investigate the influence of design parameters on the optimal mass.
+- Compare different skin and core material combinations.
+- Convert the continuous optimum into a manufacturable configuration.
+
+## Model Description
+
+The reference configuration consists of flax-fiber composite skins and a Nomex honeycomb core.
+
+| Parameter | Value |
+|---|---:|
+| Panel width | 200 mm |
+| Panel span | 600 mm |
+| Applied load | 600 N |
+| Maximum deflection | 6 mm |
+| Skin safety factor | 2.0 |
+| Skin Young's modulus | 12 GPa |
+| Skin density | 1,250 kg/m³ |
+| Allowable skin stress | 80 MPa |
+| Core shear modulus | 25 MPa |
+| Core through-thickness modulus | 130 MPa |
+| Core density | 48 kg/m³ |
+| Allowable core shear stress | 0.60 MPa |
+
+**Note:** The reference material properties are illustrative and should be replaced with validated material data before using the model for engineering design decisions.
+
+## Optimization Method
+
+The design variables are:
+
+- \(t_f\): skin thickness
+- \(c\): core thickness
+
+The optimization problem can be expressed as:
+
+\[
+\min_{t_f,c} \quad m(t_f,c)
+\]
+
+subject to:
+
+- Maximum deflection constraint
+- Skin strength constraint
+- Skin wrinkling constraint
+- Core cell buckling constraint
+- Core shear constraint
+- Core indentation constraint
+- Geometric validity constraints
+- Lower and upper bounds on design variables
+
+The objective function accounts for the mass contributions of the skins and the core.
+
+The optimization is performed using MATLAB's `fmincon` function with two algorithms:
+
+- **Sequential Quadratic Programming (SQP)**
+- **Interior-Point**
+
+Multiple starting points are used to assess numerical convergence and sensitivity to the initial design.
+
+## Results
+
+### Continuous optimum
+
+For the reference flax/Nomex configuration, both algorithms converge to essentially the same solution.
+
+| Result | Value |
+|---|---:|
+| Optimal skin thickness | 0.400 mm |
+| Optimal core thickness | 31.702 mm |
+| Minimum mass | 0.30260 kg |
+| Maximum deflection | 6.000 mm |
+| Converged starting points | 16/16 |
+| Mass difference between algorithms | Negligible |
+
+The maximum deflection constraint is active at the optimum, as is the lower bound on skin thickness.
+
+The optimized mass is approximately 0.03% lower than the result obtained from the exhaustive grid search.
+
+### Manufacturable configuration
+
+The continuous solution is converted into a configuration compatible with discrete manufacturing choices.
+
+| Parameter | Value |
+|---|---:|
+| Number of skin plies | 1 |
+| Skin thickness | 0.40 mm |
+| Core thickness | 32 mm |
+| Total mass | 0.3043 kg |
+| Mass increase relative to continuous optimum | Approximately 0.6% |
+
+This illustrates the difference between a mathematical optimum and a design constrained by manufacturing requirements.
+
+## Parametric Studies
+
+### 1. Mass–deflection Pareto study
+
+The maximum allowable deflection is varied to evaluate the trade-off between structural stiffness and mass.
+
+The results show that tighter deflection requirements generally lead to heavier designs. For more permissive deflection limits, other constraints, such as skin strength, may become governing.
+
+### 2. Sensitivity analysis
+
+The influence of selected parameters on the optimal mass is investigated.
+
+| Parameter | Calculated mass elasticity |
+|---|---:|
+| Applied load \(F\) | +0.320 |
+| Skin Young's modulus \(E_f\) | -0.290 |
+| Core density \(\rho_c\) | +0.602 |
+
+These values correspond to the sensitivity analysis performed for the reference configuration. They should not be interpreted as universal material or structural relationships.
+
+### 3. Material comparison
+
+Three material combinations are evaluated.
+
+| Skin material | Core material | Continuous optimal mass |
+|---|---|---:|
+| Flax composite | Nomex honeycomb | 0.3026 kg |
+| Flax composite | Balsa | 0.6115 kg |
+| Carbon composite | Nomex honeycomb | 0.2016 kg |
+
+Under the assumptions and material properties used in the model, the carbon/Nomex configuration provides the lowest calculated mass. A real-world material selection would also require consideration of cost, manufacturing, durability, environmental impact, and experimental validation.
+
+## Numerical Verification
+
+The project includes three consistency checks:
+
+- **Homogeneous-beam limit:** verifies convergence toward the homogeneous-beam solution as the core shear modulus increases.
+- **Analytical comparison:** compares the numerical optimum with an analytical solution under simplified assumptions.
+- **Grid-search comparison:** compares the `fmincon` solution with an exhaustive design-space search.
+
+All three checks passed in the reported simulation.
+
+These checks support the numerical consistency of the implementation but do not independently validate every physical assumption in the structural model.
+
+## Technologies
+
+- MATLAB
+- `fmincon` constrained nonlinear optimization
+- SQP and Interior-Point algorithms
+- Parametric analysis
+- Sensitivity analysis
+- Numerical verification
+- Composite sandwich-structure mechanics
+
+**Required MATLAB product:** Optimization Toolbox.
+
+## Running the Project
+
+1. Clone or download this repository.
+2. Open MATLAB and set the project folder as the current directory.
+3. Ensure that Optimization Toolbox is installed and available.
+4. Run the main script:
 
 ```matlab
->> main        % ~30 s ; écrit resultats.txt et figures/*.png
+main
 ```
 
-Toolbox requise : **Optimization Toolbox** (`fmincon`, `optimoptions`). Tout le reste utilise MATLAB de base.
+The script performs the reference-case optimization, compares optimization algorithms, evaluates a manufacturable design, generates Pareto and sensitivity studies, compares material combinations, and runs consistency checks.
 
-## Structure (une fonction = une idée)
+Figures are saved in the project's `figures` directory.
 
-| Fichier | Rôle |
-|---|---|
-| `parametres.m` | Seul endroit où l'on change une donnée (SI) |
-| `assembler_cas.m` | Fusionne une peau et une âme en une structure plate `q` |
-| `masse_panneau.m`, `rigidite_flexion.m`, `rigidite_cisaillement.m`, `fleche_panneau.m` | Modèle physique |
-| `contraintes_panneau.m` | σ peau, τ âme, plissement, flambement de cellule, poinçonnement |
-| `marges_contraintes.m` | Les 6 contraintes normalisées `g = demandé/admissible − 1 ≤ 0` |
-| `contraintes_nl.m` | Contraintes non linéaires au format `fmincon` |
-| `optimiser_panneau.m`, `generer_departs.m` | `fmincon` multi-départs (SQP ou interior-point) |
-| `recherche_grille.m` | Recherche exhaustive (calcul matriciel) |
-| `discretiser_solution.m` | Arrondi à des plis entiers et à un pas d'âme |
-| `etude_pareto.m`, `etude_sensibilite.m`, `etude_materiaux.m` | Études |
-| `tests_coherence.m` | 3 tests contre des solutions connues |
-| `tracer_espace_conception.m`, `sauver_figure.m`, `afficher_optimum.m` | Sorties |
+## Limitations
 
-Toutes les fonctions physiques utilisent des opérations terme à terme, donc elles acceptent des scalaires (fmincon) et des matrices (grille). Les unités sont SI dans les fonctions physiques ; l'optimiseur manipule `x = [tf; c]` en **mm** pour un bon conditionnement. Pour le portage Python : mêmes noms, mêmes arguments `(tf, c, p)`, `p` devient un dictionnaire, `fmincon` devient `scipy.optimize.minimize(method='SLSQP')` avec `constraints={'type':'ineq','fun': lambda x: -g(x)}`.
+This project is a numerical engineering study rather than a validated industrial design tool.
 
-## Modèle et formules
+- Material properties are illustrative.
+- Structural predictions depend on the assumptions and equations implemented in the model.
+- Manufacturing constraints are represented through simplified discrete design choices.
+- Numerical convergence does not guarantee global optimality.
+- Experimental testing and comparison with validated analytical or finite-element models would be required before practical application.
 
-Notation : d = c + tf, M = F·L/4, V = F/2.
+## Future Improvements
 
-- Rigidité de flexion : D = Ef·b·tf·d²/2 + Ef·b·tf³/6 + Ec·b·c³/12 (exacte ; avec Ef = Ec elle redonne E·b·h³/12).
-- Flèche : δ = F·L³/(48·D) + F·L/(4·S), avec S = Gc·b·d²/c.
-- Contrainte de peau : σf = M·Ef·(c/2 + tf)/D. Cette forme est cohérente avec D. La formule demandée M/(b·tf·d) reste disponible (`p.sigma_exacte = false`) et donne 35,0 au lieu de 35,4 MPa sur le cas de référence.
-- Cisaillement d'âme : τc = F/(2·b·d).
-- Masse : m = b·L·(2·ρf·tf + ρc·c).
-- Plissement des peaux : σwr = 0,43·(Ef·Ez·Gc)^(1/3), avec **Ez le module de l'âme à travers l'épaisseur**, distinct de Ec (module dans le plan, utilisé dans D).
-- Flambement de cellule (nid d'abeille) : σdimp = 2·Ef/(1 − ν²)·(tf/s)².
-- Poinçonnement : peau en poutre sur fondation élastique, pression maximale F·β/(2·b), β = (3·Ez/(Ef·c·tf³))^(1/4).
-- Contraintes : δ ≤ δmax ; σf·SF ≤ min(σadm, σwr, σdimp) ; τc ≤ τadm ; pression de poinçonnement ≤ résistance en compression de l'âme.
-- Bornes : tf ≥ 1 pli entier (`p.au_moins_un_pli`), 0,2–5 mm ; c de 3 à 50 mm.
+- Validate the model against finite-element simulations.
+- Incorporate experimentally measured material properties.
+- Extend the optimization to additional geometric and material design variables.
+- Include manufacturing cost and environmental impact in the objective function.
+- Explore robust optimization under material-property and loading uncertainties.
+- Compare numerical predictions with experimental test results.
 
-## Résultats (données arbitraires de `parametres.m`)
+## Author
 
-Cas de référence : b = 200 mm, L = 600 mm, F = 600 N, δmax = 6 mm (L/100), SF = 2, peaux lin, âme Nomex.
-
-| Résultat | Valeur |
-|---|---|
-| Optimum continu | tf = 0,400 mm (borne 1 pli), c = 31,70 mm, m = 0,3026 kg |
-| Contraintes saturées | flèche + borne tf_min |
-| Robustesse | 16 départs sur 16 convergent vers le même point (dispersion de masse 3·10⁻⁸) |
-| Grille 600 × 600 | m = 0,3027 kg ; écart fmincon/grille −0,03 % |
-| Flèche | 5,45 mm de flexion + 0,55 mm de cisaillement |
-| Marges | σf 35,4 MPa pour 40 MPa admissibles ; poinçonnement 0,53 pour 2,0 MPa ; τ 0,047 pour 0,6 MPa |
-| Solution fabricable | 1 pli de 0,40 mm, c = 32 mm, m = 0,3043 kg (+0,6 %) |
-
-Pareto (lin/Nomex) : la masse passe de 0,677 kg à δmax = 1 mm à 0,448 kg à 2 mm, 0,384 kg à 3 mm, 0,303 kg à 6 mm, 0,280 kg à 8 mm, puis sature à **0,2786 kg** dès δmax ≥ 9 mm. Au-delà de 9 mm, la rupture de la peau remplace la flèche comme contrainte active (tf = 0,464 mm, c = 24,2 mm).
-
-Sensibilité (élasticité d ln m / d ln x autour du cas de référence) : charge F +0,32 ; module de peau Ef −0,29 ; masse volumique d'âme ρc +0,60. Une hausse de 10 % de ρc coûte donc environ 6 % de masse.
-
-Comparaison de matériaux (δmax = 6 mm, solutions fabricables) :
-
-| Peau / âme | m continu | m fabricable | Plis × t_pli, c |
-|---|---|---|---|
-| lin / Nomex | 0,3026 kg | 0,3043 kg | 1 × 0,40 mm, 32 mm |
-| lin / balsa | 0,6115 kg | 0,6540 kg | 2 × 0,40 mm, 23 mm |
-| carbone / Nomex | 0,2016 kg | 0,2052 kg | 1 × 0,25 mm, 20 mm |
-
-Tests de cohérence (tous passent) :
-
-- **T1, poutre homogène.** Avec Ec = Ef et Gc → ∞, D égale E·b·h³/12 à 10⁻¹⁶ près et δ égale F·L³/(4·E·b·h³) ; l'écart décroît en 1/Gc (10⁻² à Gc = 10¹⁰, 10⁻¹⁰ à 10¹⁸).
-- **T2, optimum analytique.** Avec flèche seule, Ec = 0 et Gc → ∞, la solution fermée est c* = (8·ρf·D_req/(ρc·Ef·b))^(1/3), tf* = 2·D_req/(Ef·b·c*²). Analytique : tf = 0,1647 mm, c = 19,76 mm, m = 0,1778 kg. fmincon : 0,1665 mm, 19,48 mm, 0,1768 kg (écarts 1,1 %, 1,4 %, 0,6 %, de l'ordre de tf/c = 0,8 %, le terme de peau mince étant négligé dans la formule fermée).
-- **T3, fmincon contre grille** : 0,03 %.
-
-## Comment ces résultats ont été vérifiés
-
-MATLAB n'était pas disponible dans mon environnement. Le code a été exécuté sous **GNU Octave 8.4** avec un substitut de `fmincon` bâti sur `sqp` (non livré). Les chiffres ont ensuite été recoupés par un calcul Python indépendant (SciPy SLSQP, réécrit à part) : masses de référence, Pareto, trois matériaux et trois élasticités concordent à 4–5 chiffres. Deux conséquences : `fmincon` réel n'a pas tourné (attendez-vous à des écarts de l'ordre de 10⁻⁴ sur tf et c), et la comparaison SQP / interior-point de `resultats_reference_octave.txt` est sans valeur puisque les deux utilisent le même solveur. Les PNG fournis sont des rendus Octave ; ceux de MATLAB seront esthétiquement différents.
-
-## Limites du modèle
-
-1. **Poutre 1D, charge ponctuelle.** Une paroi est une plaque, souvent chargée par une pression répartie (formules différentes : δ = 5qL⁴/(384D) + qL²/(8S)). Les conditions aux limites réelles ne sont ni des appuis simples ni une portée unique.
-2. **Peaux isotropes.** Un stratifié lin ou carbone est orthotrope ; Ef dépend de l'orientation des plis, de Vf et du procédé. Le lin a un comportement non linéaire et sensible à l'humidité.
-3. **σadm de peau unique.** Il faut le minimum traction/compression dans le sens L, après abattements (fatigue, humidité, température).
-4. **Poinçonnement par fondation élastique de Winkler**, charge ponctuelle supposée. Modèle le moins fiable du lot : à valider en priorité.
-5. **Plissement et flambement de cellule** : formules classiques avec coefficient 0,43 ; sensibles aux défauts de collage et au sandwich non plan.
-6. **Modes de ruine absents** : écrasement/flambement global, décollement peau-âme, flambement par cisaillement de l'âme (crimping), fluage de l'âme, impact.
-7. **Poids** : masse de résine ou de colle non comptée, ρf supposé uniforme.
-8. **Données arbitraires.** Aucune valeur n'est issue d'une fiche ou d'un essai.
-9. **Variables discrètes** : l'arrondi à des plis entiers est fait après coup. Un vrai optimum discret demande une énumération (peu de combinaisons possibles : la grille s'y prête).
-
-## Pour valider
-
-1. Remplacer `parametres.m` par les valeurs de fiches (ou d'essais de caractérisation) et refaire tourner `main`.
-2. Modèle éléments finis Abaqus (coque sandwich ou solide pour l'âme) sur le point optimum fabricable : comparer flèche, contrainte de peau et pression sous le point de charge. Un écart de l'ordre de 5 à 10 % est un repère courant pour accepter un modèle analytique (à fixer avec votre encadrant).
-3. Essais de flexion 3 points sur 3 éprouvettes du point optimum (ASTM C393, flexion de sandwich) avec mesure de la flèche et identification du mode de ruine.
-4. Si le mode de ruine mesuré diffère du mode saturé prédit, ajouter la contrainte correspondante dans `marges_contraintes.m` : une seule fonction à modifier.
+Developed as a mechanical engineering project focused on composite structures, numerical optimization, and lightweight structural design.

@@ -33,8 +33,10 @@ for k = 1:N
         [xk, fk, ef] = fmincon(fobj, X0(:,k), [], [], [], [], lb, ub, fcon, opts);
         X(:,k) = xk;  M(k) = fk;  flag(k) = ef;
         gmax(k) = max(fcon(xk));       % pire violation de contrainte
-    catch
-        flag(k) = -99;                  % echec du solveur : on ignore ce depart
+    catch ME
+        fprintf('\nErreur au depart %d :\n%s\n', ...
+            k, getReport(ME, 'extended'));
+        flag(k) = -99;
     end
 end
 
